@@ -1,0 +1,15 @@
+---
+type: RadioMultiAnswer
+inherits: _base_cmp
+class: parser::RadioMultiAnswer
+source_macro: parserRadioMultiAnswer.pl
+cmp_defaults:
+  correct_choice:
+    default: ~
+    type: undef
+  entry_type:
+    default: choice
+    type: string
+  list_type:
+    default: selection
+    type: string
