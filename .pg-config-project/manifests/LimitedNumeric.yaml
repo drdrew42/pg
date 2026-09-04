@@ -1,0 +1,55 @@
+context: LimitedNumeric
+inherits: _base
+type: macro-defined
+source_macro: contextLimitedNumeric.pl
+context_class: Parser::Context
+
+flags:
+  formatStudentAnswer:
+    default: 'evaluated'
+    type: string
+  limits:
+    default: ARRAY
+    type: array
+  mathQuillOpts:
+    default: HASH
+    type: hash
+  reduceConstantFunctions:
+    default: 1
+    type: boolean
+  reduceConstants:
+    default: 1
+    type: boolean
+  tolType:
+    default: 'relative'
+    type: string
+  tolerance:
+    default: 0.001
+    type: string
+  useBaseTenLog:
+    default: 0
+    type: boolean
+  useMathQuill:
+    default: 1
+    type: boolean
+
+operators:
+  !: {string: '!'}
+  *: {string: '*'}
+  * : {string: '*'}
+  **: {string: '^'}
+  +: {string: '+'}
+  -: {string: '-'}
+  .: {TeX: '\cdot ', string: '.'}
+  /: {string: '/'}
+  / : {string: '/'}
+  //: {string: '/'}
+  ^: {string: '^'}
+  _: {string: '_'}
+
+constants:
+  e: {value_type: scalar}
+  pi: {TeX: '\pi ', value_type: scalar}
+
+variables:
+  x: Number
