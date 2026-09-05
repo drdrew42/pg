@@ -1,0 +1,15 @@
+---
+type: DropDown
+inherits: _base_cmp
+class: parser::PopUp
+source_macro: parserPopUp.pl
+cmp_defaults:
+  correct_choice:
+    default: ~
+    type: undef
+  entry_type:
+    default: choice
+    type: string
+  list_type:
+    default: selection
+    type: string
