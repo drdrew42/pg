@@ -761,6 +761,11 @@ sub sign {
 my $customGraphObjects = '';
 my $customTools        = '';
 
+# Unique-id counter for display graphs (correct answer, student preview, solution)
+# generated before an answer name exists. These need a unique DOM id, not the
+# answer name, so they must not allocate or record one.
+my $answerGraphCount = 0;
+
 sub addGraphObjects {
 	my ($self, @objects) = @_;
 
@@ -904,10 +909,30 @@ sub constructJSXGraphOptions {
 # JavaScript to display the graph tool.  If a hard copy is being generated, then PGtikz.pl is used
 # to generate a printable graph instead.  An attempt is made to make the printable graph look
 # as much as possible like the JavaScript graph.
-sub ans_rule {
-	my $self         = shift;
-	my $answer_value = $main::envir{inputs_ref}{ $self->ANS_NAME } // '';
-	my $ans_name     = main::RECORD_ANS_NAME($self->ANS_NAME, $answer_value);
+sub ans_rule                 { shift->_ans_rule(0, '', @_) }
+sub named_ans_rule           { shift->_ans_rule(0, @_) }
+sub named_ans_rule_extension { shift->_ans_rule(1, @_) }
+
+sub _ans_rule {
+	my ($self, $extend, $name, $size, %options) = @_;
+
+	# A named rule (a MultiAnswer member) binds the widget to the given name; a bare
+	# ans_rule uses the object's own answer name.
+	if   ($name) { $self->{name} = $name }
+	else         { $name         = $self->ANS_NAME }
+
+	my $answer_value = $main::envir{inputs_ref}{$name} // '';
+
+	# An extension rule adds the field to the parent MultiAnswer group as a response;
+	# a standalone rule records it as its own answer. RECORD_ANS_NAME also claims an
+	# evaluator from the implicit answer stack, which a group response must not do.
+	my $ans_name;
+	if ($extend) {
+		main::INSERT_RESPONSE($options{answer_group_name} // '', $name, $answer_value);
+		$ans_name = $name;
+	} else {
+		$ans_name = main::RECORD_ANS_NAME($name, $answer_value);
+	}
 
 	if ($main::displayMode =~ /^(TeX|PTX)$/ && $self->{showInStatic}) {
 		return $self->generateTeXGraph(showCorrect => 0)
@@ -1137,7 +1162,10 @@ sub generateHTMLAnswerGraph {
 	my $answerObjects   = $options{showCorrect} ? join(',', $self->value) : '';
 	$answerObjects = join(',', $options{objects}, $answerObjects || ()) if defined $options{objects};
 
-	my $ans_name = $self->ANS_NAME;
+	# Use the answer name only if it already exists; a display graph must not
+	# allocate/record one (that would leave a stale implicit answer name, e.g. when
+	# a GraphTool is built as a MultiAnswer member). Any unique id serves here.
+	my $ans_name = $self->{name} // ('gtAnsGraph' . ++$answerGraphCount);
 	$self->constructJSXGraphOptions;
 
 	if ($options{width} || $options{height}) {
