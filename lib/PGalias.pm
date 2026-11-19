@@ -38,6 +38,22 @@ sub new {
 	$self->warning_message('The htmlURL is not defined.')       unless $self->{htmlURL};
 	$self->warning_message('The tempURL is not defined.')       unless $self->{tempURL};
 
+	# Auxiliary files the caller already serves by URL: { file name => URL }. A seeded name
+	# resolves to its URL, as written or with a leading "./".
+	my $injected = $envir->{injectedResources};
+	if (ref $injected eq 'HASH') {
+		for my $name (keys %$injected) {
+			my $url = $injected->{$name};
+			next unless defined $url && length $url && $name =~ m/\.([^.\/]+)$/;
+			my $ext = $1;
+			for my $id ($name, "./$name") {
+				my $resource = $self->make_resource_object($id, $ext);
+				$resource->uri($url);
+				$self->add_resource($id, $resource);
+			}
+		}
+	}
+
 	return $self;
 }
 
